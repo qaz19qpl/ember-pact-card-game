@@ -11,8 +11,13 @@ import { buildDossier } from './vendor/makefun-game.ts';
 const repoRoot = dirname(fileURLToPath(import.meta.url));
 const outDir = process.env.MAKEFUN_OUTPUT_DIR ?? '/output';
 
-rmSync(outDir, { recursive: true, force: true });
 mkdirSync(outDir, { recursive: true });
+// Clear previous outputs without removing outDir itself: the grader mounts
+// /output, and deleting a mount point fails (EPERM). Removing its contents
+// is enough for a deterministic run.
+for (const name of ['game', 'screenshots', 'dossier.json']) {
+  rmSync(join(outDir, name), { recursive: true, force: true });
+}
 
 for (const name of ['game', 'screenshots']) {
   cpSync(join(repoRoot, name), join(outDir, name), { recursive: true });
